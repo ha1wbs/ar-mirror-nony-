@@ -2,32 +2,30 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
-<title>مرآة AR • صورة نوني</title>
+<title>مرآة AR • نوني الحرة</title>
 <style>
-  body {margin:0; background:#111; color:#fff; font-family:system-ui; text-align:center;}
+  body {margin:0; background:#0f0f0f; color:#fff; font-family:system-ui; text-align:center;}
   #container {max-width:620px; margin:20px auto; position:relative;}
-  #photo {max-width:100%; border-radius:20px; box-shadow:0 0 30px rgba(255,80,150,0.3);}
+  #photo {max-width:100%; border-radius:20px; box-shadow:0 0 40px rgba(255,80,150,0.4);}
   canvas {position:absolute; top:0; left:0; pointer-events:none; border-radius:20px;}
-  .controls {margin-top:25px;}
-  button {background:#1f1f1f; color:#fff; border:1px solid #ff99cc; padding:12px 20px; margin:8px; border-radius:25px; font-size:15px; cursor:pointer;}
+  .controls {margin-top:20px;}
+  button {background:#1a1a1a; color:#fff; border:1px solid #ff66aa; padding:12px 18px; margin:6px; border-radius:25px; font-size:15px;}
   button:hover {background:#ff4d94; color:#000;}
-  .title {color:#ff99cc; font-size:24px; margin:15px 0;}
+  .title {color:#ff99cc; font-size:22px; margin-bottom:10px;}
 </style>
 </head>
 <body>
 
 <div id="container">
-  <div class="title">مرآة AR • صورة نوني الحرة</div>
-  
-  <input type="file" id="upload" accept="image/*" style="margin:15px;">
-  <br>
+  <div class="title">مرآة AR • نوني الحرة</div>
+  <input type="file" id="upload" accept="image/*"><br><br>
   <img id="photo" style="display:none;">
   <canvas id="canvas" style="display:none;"></canvas>
-  
+
   <div class="controls" style="display:none;" id="controls">
-    <button onclick="applyGaze()">👁️ عيون الرجال عليكِ</button>
-    <button onclick="applyTouch()">✋ لمسات افتراضية</button>
-    <button onclick="highlightNipples()">🌸 أبرزي حلماتكِ</button>
+    <button onclick="strongGaze()">👁️ عيون الرجال (قوي)</button>
+    <button onclick="touchEffect()">✋ لمسات قوية</button>
+    <button onclick="pulseNipples()">🌸 نبض الحلمات</button>
     <button onclick="resetAll()">إعادة تعيين</button>
   </div>
 </div>
@@ -40,7 +38,8 @@ const ctx = canvas.getContext('2d');
 const controls = document.getElementById('controls');
 
 let img = new Image();
-let gaze = false, touch = false, nipples = false;
+let gaze = false, touch = false, pulse = false;
+let frame = 0;
 
 upload.onchange = function(e) {
   const file = e.target.files[0];
@@ -55,7 +54,7 @@ upload.onchange = function(e) {
       canvas.height = photo.offsetHeight;
       canvas.style.display = "block";
       controls.style.display = "block";
-      drawEffects();
+      animate();
     }
   }
   reader.readAsDataURL(file);
@@ -63,49 +62,57 @@ upload.onchange = function(e) {
 
 function drawEffects() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
+  frame++;
+
   if (gaze) {
-    ctx.fillStyle = "rgba(255, 100, 160, 0.12)";
+    ctx.fillStyle = "rgba(255, 60, 140, 0.25)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // glow on chest area
-    const grad = ctx.createRadialGradient(canvas.width/2, canvas.height*0.55, 40, canvas.width/2, canvas.height*0.55, 180);
-    grad.addColorStop(0, "rgba(255,120,180,0.35)");
-    grad.addColorStop(1, "rgba(255,80,150,0)");
+    const grad = ctx.createRadialGradient(canvas.width/2, canvas.height*0.52, 30, canvas.width/2, canvas.height*0.52, 260);
+    grad.addColorStop(0, "rgba(255,100,180,0.45)");
+    grad.addColorStop(1, "rgba(255,60,140,0)");
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
-  
-  if (nipples) {
-    ctx.strokeStyle = "rgba(255,220,240,0.7)";
+
+  if (pulse) {
+    const cx = canvas.width/2;
+    const cy = canvas.height * 0.5;
+    const size = 35 + Math.sin(frame/8) * 12;
+    
+    ctx.strokeStyle = "#ff99cc";
     ctx.lineWidth = 4;
     ctx.beginPath();
-    ctx.arc(canvas.width*0.38, canvas.height*0.52, 32, 0, Math.PI*2);
+    ctx.arc(cx - 60, cy, size, 0, Math.PI*2);
     ctx.stroke();
     ctx.beginPath();
-    ctx.arc(canvas.width*0.62, canvas.height*0.52, 32, 0, Math.PI*2);
+    ctx.arc(cx + 60, cy, size, 0, Math.PI*2);
     ctx.stroke();
   }
-  
+
   if (touch) {
-    ctx.strokeStyle = "rgba(255,150,200,0.5)";
-    ctx.lineWidth = 2;
-    for (let i = 0; i < 3; i++) {
+    ctx.strokeStyle = "rgba(255,150,200,0.7)";
+    ctx.lineWidth = 3;
+    for (let i = 0; i < 5; i++) {
       ctx.beginPath();
-      ctx.arc(canvas.width/2 + (i-1)*40, canvas.height*0.55, 25 + i*8, 0, Math.PI*2);
+      ctx.arc(canvas.width/2, canvas.height*0.52, 40 + i*18 + Math.sin(frame/6)*8, 0, Math.PI*2);
       ctx.stroke();
     }
   }
 }
 
-function applyGaze() { gaze = true; drawEffects(); }
-function applyTouch() { touch = true; drawEffects(); }
-function highlightNipples() { nipples = true; drawEffects(); }
+function animate() {
+  drawEffects();
+  requestAnimationFrame(animate);
+}
+
+function strongGaze() { gaze = true; }
+function touchEffect() { touch = true; }
+function pulseNipples() { pulse = true; }
 function resetAll() {
-  gaze = false; touch = false; nipples = false;
+  gaze = false; touch = false; pulse = false;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 </script>
-
 </body>
-</html>إضافة مرآة AR
+</html>
